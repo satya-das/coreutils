@@ -235,9 +235,12 @@ struct cp_options
   bool symbolic_link;
 
   /* If true, do not copy a nondirectory that has an existing destination
-     with the same or newer modification time. */
+     with the same or newer modification time unless clobber is also set. */
   bool update;
-
+  /* If true, update even when destination is newer than source.
+     So, in case of update with clobber files with same timestamp will
+     be skipped and all others will be copied.*/
+  bool clobber;
   /* If true, display the names of the files before copying them. */
   bool verbose;
 

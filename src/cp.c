@@ -119,6 +119,7 @@ static struct option const long_opts[] =
   {"archive", no_argument, NULL, 'a'},
   {"attributes-only", no_argument, NULL, ATTRIBUTES_ONLY_OPTION},
   {"backup", optional_argument, NULL, 'b'},
+  {"clobber", optional_argument, NULL, 'c'},
   {"copy-contents", no_argument, NULL, COPY_CONTENTS_OPTION},
   {"dereference", no_argument, NULL, 'L'},
   {"force", no_argument, NULL, 'f'},
@@ -173,6 +174,9 @@ Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n\
       --backup[=CONTROL]       make a backup of each existing destination file\
 \n\
   -b                           like --backup but does not accept an argument\n\
+\n\
+  -c, --clobber-changed        overwrite changed files, used with -u option only\n\
+\n\
       --copy-contents          copy contents of special files when recursive\n\
   -d                           same as --no-dereference --preserve=links\n\
 "), stdout);
@@ -224,9 +228,10 @@ Copy SOURCE to DEST, or multiple SOURCE(s) to DIRECTORY.\n\
   -T, --no-target-directory    treat DEST as a normal file\n\
 "), stdout);
       fputs (_("\
-  -u, --update                 copy only when the SOURCE file is newer\n\
+  -u, --update                 copy when the SOURCE file is newer\n\
                                  than the destination file or when the\n\
-                                 destination file is missing\n\
+                                 destination file is missing or when destination\n\
+                                 file is newer but option -c is used\n\
   -v, --verbose                explain what is being done\n\
   -x, --one-file-system        stay on this file system\n\
 "), stdout);
@@ -819,6 +824,7 @@ cp_option_init (struct cp_options *x)
   x->stdin_tty = false;
 
   x->update = false;
+  x->clobber = false;
   x->verbose = false;
 
   /* By default, refuse to open a dangling destination symlink, because
@@ -949,7 +955,7 @@ main (int argc, char **argv)
   selinux_enabled = (0 < is_selinux_enabled ());
   cp_option_init (&x);
 
-  while ((c = getopt_long (argc, argv, "abdfHilLnprst:uvxPRS:TZ",
+  while ((c = getopt_long (argc, argv, "abcdfHilLnprst:uvxPRS:TZ",
                            long_opts, NULL))
          != -1)
     {
@@ -987,6 +993,10 @@ main (int argc, char **argv)
           make_backups = true;
           if (optarg)
             version_control_string = optarg;
+          break;
+
+        case 'c':
+          x.clobber = true;
           break;
 
         case ATTRIBUTES_ONLY_OPTION:

@@ -1942,10 +1942,11 @@ copy_internal (char const *src_name, char const *dst_name,
                              ? UTIMECMP_TRUNCATE_SOURCE
                              : 0);
 
-              if (0 <= utimecmp (dst_name, &dst_sb, &src_sb, options))
+              int timecmp = utimecmp (dst_name, &dst_sb, &src_sb, options);
+              if (0 == timecmp || (0 < timecmp && !x->clobber))
                 {
-                  /* We're using --update and the destination is not older
-                     than the source, so do not copy or move.  Pretend the
+                  /* We're using --update and the destination is not to be replaced by
+                     source, so do not copy or move.  Pretend the
                      rename succeeded, so the caller (if it's mv) doesn't
                      end up removing the source file.  */
                   if (rename_succeeded)
